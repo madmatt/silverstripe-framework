@@ -608,11 +608,6 @@ class ArrayList extends ViewableData implements SS_List, SS_Filterable, SS_Sorta
 		return $list;
 	}
 
-	protected function shouldExclude($item, $args) {
-
-	}
-
-
 	/**
 	 * Returns whether an item with $key exists
 	 *
