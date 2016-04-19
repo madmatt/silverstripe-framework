@@ -33,10 +33,9 @@ class DBVarchar extends DBString {
  	 * @param $size int The maximum size of the field, in terms of characters
  	 * @param $options array Optional parameters, e.g. array("nullifyEmpty"=>false).
  	 *                       See {@link StringField::setOptions()} for information on the available options
- 	 * @return unknown_type
  	 */
 	public function __construct($name = null, $size = 50, $options = array()) {
-		$this->size = $size ? $size : 50;
+		$this->size = $size;
 		parent::__construct($name, $options);
 	}
 
@@ -47,6 +46,7 @@ class DBVarchar extends DBString {
 	 *
 	 * TextField::create('Title')->setMaxLength(singleton('SiteTree')->dbObject('Title')->getSize())
 	 *
+	 * @codeCoverageIgnore
 	 * @return int The size of the field
 	 */
 	public function getSize() {

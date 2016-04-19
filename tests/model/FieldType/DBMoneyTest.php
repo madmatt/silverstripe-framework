@@ -16,21 +16,21 @@ use SilverStripe\Model\FieldType\DBMoney;
  */
 class DBMoneyTest extends SapphireTest {
 
-	protected static $fixture_file = 'MoneyTest.yml';
+	protected static $fixture_file = 'DBMoneyTest.yml';
 
 	protected $extraDataObjects = array(
-		'MoneyTest_DataObject',
-		'MoneyTest_SubClass',
+		'DBMoneyTest_DataObject',
+		'DBMoneyTest_SubClass',
 	);
 
 	public function testMoneyFieldsReturnedAsObjects() {
-		$obj = $this->objFromFixture('MoneyTest_DataObject', 'test1');
+		$obj = $this->objFromFixture('DBMoneyTest_DataObject', 'test1');
 		$this->assertInstanceOf('SilverStripe\Model\FieldType\DBMoney', $obj->MyMoney);
 	}
 
 
 	public function testLoadFromFixture() {
-		$obj = $this->objFromFixture('MoneyTest_DataObject', 'test1');
+		$obj = $this->objFromFixture('DBMoneyTest_DataObject', 'test1');
 
 		$this->assertInstanceOf('SilverStripe\Model\FieldType\DBMoney', $obj->MyMoney);
 		$this->assertEquals($obj->MyMoney->getCurrency(), 'EUR');
@@ -38,7 +38,7 @@ class DBMoneyTest extends SapphireTest {
 	}
 
 	public function testDataObjectChangedFields() {
-		$obj = $this->objFromFixture('MoneyTest_DataObject', 'test1');
+		$obj = $this->objFromFixture('DBMoneyTest_DataObject', 'test1');
 
 		// Without changes
 		$curr = $obj->obj('MyMoney');
@@ -54,7 +54,7 @@ class DBMoneyTest extends SapphireTest {
 	}
 
 	public function testCanOverwriteSettersWithNull() {
-		$obj = new MoneyTest_DataObject();
+		$obj = new DBMoneyTest_DataObject();
 
 		$m1 = new DBMoney();
 		$m1->setAmount(987.65);
@@ -68,8 +68,8 @@ class DBMoneyTest extends SapphireTest {
 		$obj->MyMoney = $m2;
 		$obj->write();
 
-		$moneyTest = DataObject::get_by_id('MoneyTest_DataObject',$obj->ID);
-		$this->assertTrue($moneyTest instanceof MoneyTest_DataObject);
+		$moneyTest = DataObject::get_by_id('DBMoneyTest_DataObject',$obj->ID);
+		$this->assertTrue($moneyTest instanceof DBMoneyTest_DataObject);
 		$this->assertEquals('', $moneyTest->MyMoneyCurrency);
 		$this->assertEquals(0.0000, $moneyTest->MyMoneyAmount);
 	}
@@ -83,7 +83,7 @@ class DBMoneyTest extends SapphireTest {
 		//make sure that the $ amount is not prefixed by US$, as it would be in non-US locale
 		i18n::set_locale('en_US');
 
-		$obj = new MoneyTest_DataObject();
+		$obj = new DBMoneyTest_DataObject();
 
 		$m = new DBMoney();
 		$m->setAmount(987.65);
@@ -95,8 +95,8 @@ class DBMoneyTest extends SapphireTest {
 
 		$objID = $obj->write();
 
-		$moneyTest = DataObject::get_by_id('MoneyTest_DataObject',$objID);
-		$this->assertTrue($moneyTest instanceof MoneyTest_DataObject);
+		$moneyTest = DataObject::get_by_id('DBMoneyTest_DataObject',$objID);
+		$this->assertTrue($moneyTest instanceof DBMoneyTest_DataObject);
 		$this->assertEquals('USD', $moneyTest->MyMoneyCurrency);
 		$this->assertEquals(987.65, $moneyTest->MyMoneyAmount);
 		$this->assertEquals("$987.65", $moneyTest->MyMoney->Nice(),
@@ -232,7 +232,7 @@ class DBMoneyTest extends SapphireTest {
 	}
 
 	public function testLoadIntoDataObject() {
-		$obj = new MoneyTest_DataObject();
+		$obj = new DBMoneyTest_DataObject();
 
 		$this->assertInstanceOf('SilverStripe\Model\FieldType\DBMoney', $obj->obj('MyMoney'));
 
@@ -248,7 +248,7 @@ class DBMoneyTest extends SapphireTest {
 	}
 
 	public function testWriteToDataObject() {
-		$obj = new MoneyTest_DataObject();
+		$obj = new DBMoneyTest_DataObject();
 		$m = new DBMoney();
 		$m->setValue(array(
 			'Currency' => 'EUR',
@@ -260,14 +260,14 @@ class DBMoneyTest extends SapphireTest {
 		$this->assertEquals(
 			'EUR',
 			DB::query(sprintf(
-				'SELECT "MyMoneyCurrency" FROM "MoneyTest_DataObject" WHERE "ID" = %d',
+				'SELECT "MyMoneyCurrency" FROM "DBMoneyTest_DataObject" WHERE "ID" = %d',
 				$obj->ID
 			))->value()
 		);
 		$this->assertEquals(
 			'1.23',
 			DB::query(sprintf(
-				'SELECT "MyMoneyAmount" FROM "MoneyTest_DataObject" WHERE "ID" = %d',
+				'SELECT "MyMoneyAmount" FROM "DBMoneyTest_DataObject" WHERE "ID" = %d',
 				$obj->ID
 			))->value()
 		);
@@ -275,14 +275,14 @@ class DBMoneyTest extends SapphireTest {
 
 	public function testMoneyLazyLoading() {
 		// Get the object, ensuring that MyOtherMoney will be lazy loaded
-		$id = $this->idFromFixture('MoneyTest_SubClass', 'test2');
-		$obj = MoneyTest_DataObject::get()->byID($id);
+		$id = $this->idFromFixture('DBMoneyTest_SubClass', 'test2');
+		$obj = DBMoneyTest_DataObject::get()->byID($id);
 
 		$this->assertEquals('£2.46', $obj->obj('MyOtherMoney')->Nice());
 	}
 
 	public function testHasAmount() {
-		$obj = new MoneyTest_DataObject();
+		$obj = new DBMoneyTest_DataObject();
 		$m = new DBMoney();
 		$obj->MyMoney = $m;
 
@@ -317,7 +317,7 @@ class DBMoneyTest extends SapphireTest {
  * @package framework
  * @subpackage tests
  */
-class MoneyTest_DataObject extends DataObject implements TestOnly {
+class DBMoneyTest_DataObject extends DataObject implements TestOnly {
 	private static $db = array(
 		'MyMoney' => 'Money',
 		//'MyOtherMoney' => 'Money',
@@ -328,7 +328,7 @@ class MoneyTest_DataObject extends DataObject implements TestOnly {
  * @package framework
  * @subpackage tests
  */
-class MoneyTest_SubClass extends MoneyTest_DataObject implements TestOnly {
+class DBMoneyTest_SubClass extends DBMoneyTest_DataObject implements TestOnly {
 
 	private static $db = array(
 		'MyOtherMoney' => 'Money',

@@ -31,6 +31,9 @@ class DBCurrencyTest extends SapphireTest {
 			"Sometimes Es are still bad: 51 dollars, even though they\'re used in scientific notation"
 				=> array('$51.00', '$51'),
 			"What about 5.68434188608E7 in the middle of a string" => array('$56,843,418.86', '$56,843,419'),
+
+			// Test setting of other values sets it to zero
+			'zzz' => array('$0.00', '$0'),
 		);
 
 		foreach($tests as $value => $niceValues) {

@@ -3,19 +3,19 @@
  * @package framework
  * @subpackage tests
  */
-class DecimalTest extends SapphireTest {
+class DBDecimalTest extends SapphireTest {
 
-	protected static $fixture_file = 'DecimalTest.yml';
+	protected static $fixture_file = 'DBDecimalTest.yml';
 
 	protected $testDataObject;
 
 	protected $extraDataObjects = array(
-		'DecimalTest_DataObject'
+		'DBDecimalTest_DataObject'
 	);
 
 	public function setUp() {
 		parent::setUp();
-		$this->testDataObject = $this->objFromFixture('DecimalTest_DataObject', 'test-dataobject');
+		$this->testDataObject = $this->objFromFixture('DBDecimalTest_DataObject', 'test-dataobject');
 	}
 
 	public function testDefaultValue() {
@@ -44,7 +44,7 @@ class DecimalTest extends SapphireTest {
  * @package framework
  * @subpackage tests
  */
-class DecimalTest_DataObject extends DataObject implements TestOnly {
+class DBDecimalTest_DataObject extends DataObject implements TestOnly {
 
 	private static $db = array(
 		'Name' => 'Varchar',

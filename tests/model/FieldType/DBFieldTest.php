@@ -228,6 +228,133 @@ class DBFieldTest extends SapphireTest {
 		$this->assertEquals('åäö', DBField::create_field('Text', 'ÅÄÖ')->LowerCase());
 	}
 
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::RAW()
+	 */
+	public function testRAW() {
+		$data = DBField::create_field('DBFieldTest_MyField', 'This &amp; This');
+		$this->assertEquals('This &amp; This', $data->RAW());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::XML()
+	 */
+	public function testXML() {
+		$data = DBField::create_field('DBFieldTest_MyField', 'This & This');
+		$this->assertEquals('This &amp; This', $data->XML());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::HTML()
+	 */
+	public function testHTML() {
+		$data = DBField::create_field('DBFieldTest_MyField', 'This & This');
+		$this->assertEquals('This &amp; This', $data->HTML());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::HTMLATT()
+	 */
+	public function testHTMLATT() {
+		$data = DBField::create_field('DBFieldTest_MyField', 'This & This');
+		$this->assertEquals('This &amp; This', $data->HTMLATT());
+
+		$data->setValue('"This & This"');
+		$this->assertEquals('&quot;This &amp; This&quot;', $data->HTMLATT());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::URLATT()
+	 */
+	public function testURLATT() {
+		$data = DBField::create_field('DBFieldTest_MyField', '"This & This"');
+		$this->assertEquals('%22This+%26+This%22', $data->URLATT());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::RAWURLATT()
+	 */
+	public function testRAWURLATT() {
+		$data = DBField::create_field('DBFieldTest_MyField', '"This & This+%$#"');
+		$this->assertEquals('%22This%20%26%20This%2B%25%24%23%22', $data->RAWURLATT());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::JS()
+	 */
+	public function testJS() {
+		$data = DBField::create_field('DBFieldTest_MyField', '"this is a test"');
+		$this->assertEquals('\"this is a test\"', $data->JS());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::ATT()
+	 */
+	public function testATT() {
+		$data = DBField::create_field('DBFieldTest_MyField', '"this is a test"');
+		$this->assertEquals('&quot;this is a test&quot;', $data->ATT());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::saveInto()
+	 */
+	public function testSaveInto() {
+		$testField = DBField::create_field('DBFieldTest_MyField', 'x', 'TestField');
+		$obj = new DBFieldTest_Object();
+		$testField->saveInto($obj);
+		$this->assertSame('x', $obj->TestField);
+	}
+
+	/**
+	 * @expectedException LogicException
+	 * @expectedExceptionMessage DBField::saveInto() Called on a nameless 'DBFieldTest_MyField' object
+	 * @covers SilverStripe\Model\FieldType\DBField::saveInto()
+	 */
+	public function testSaveIntoHandlesUnnamedFields() {
+		$failingField = DBField::create_field('DBFieldTest_MyField', 'x');
+		$obj = new DBFieldTest_Object();
+		$failingField->saveInto($obj);
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::forTemplate()
+	 */
+	public function testForTemplate() {
+		$field = DBField::create_field('DBFieldTest_MyField', 'This & This');
+		$this->assertEquals('This &amp; This', $field->forTemplate());
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::__toString()
+	 */
+	public function testToString() {
+		$field = DBField::create_field('DBFieldTest_MyField', 'This & This');
+		$this->assertEquals('This &amp; This', sprintf('%s', $field));
+	}
+
+	/**
+	 * @covers SilverStripe\Model\FieldType\DBField::debug()
+	 */
+	public function testDebug() {
+		$expected = <<<DBG
+<ul>
+	<li><b>Name:</b>fieldName</li>
+	<li><b>Table:</b></li>
+	<li><b>Value:</b>field value</li>
+</ul>
+DBG;
+
+		$field = DBField::create_field('DBFieldTest_MyField', 'field value', 'fieldName');
+		$this->assertEquals($expected, $field->debug());
+	}
 }
 
+class DBFieldTest_MyField extends DBField implements TestOnly {
+	public function requireField() {}
+}
 
+class DBFieldTest_Object extends DataObject implements TestOnly {
+	private static $db = array(
+		'TestField' => 'Varchar(100)'
+	);
+}

@@ -81,7 +81,7 @@ class DBText extends DBString {
 	 */
 	public function LimitSentences($sentCount = 2) {
 		if(!is_numeric($sentCount)) {
-			user_error("Text::LimitSentence() expects one numeric argument", E_USER_NOTICE);
+			throw new \InvalidArgumentException("DBText::LimitSentences() expects one numeric argument", E_USER_NOTICE);
 		}
 
 		$output = array();
@@ -323,7 +323,7 @@ class DBText extends DBString {
 	}
 
 	/**
-	 * (non-PHPdoc)
+	 * @codeCoverageIgnore
 	 * @see DBField::scaffoldSearchField()
 	 */
 	public function scaffoldSearchField($title = null, $params = null) {

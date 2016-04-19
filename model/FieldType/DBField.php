@@ -301,7 +301,10 @@ abstract class DBField extends ViewableData {
 		if($fieldName) {
 			$dataObject->$fieldName = $this->value;
 		} else {
-			user_error("DBField::saveInto() Called on a nameless '" . get_class($this) . "' object", E_USER_ERROR);
+			throw new \LogicException(
+				"DBField::saveInto() Called on a nameless '" . get_class($this) . "' object",
+				E_USER_ERROR
+			);
 		}
 	}
 
@@ -311,6 +314,7 @@ abstract class DBField extends ViewableData {
 	 *
 	 * Used by {@link SearchContext}, {@link ModelAdmin}, {@link DataObject::scaffoldFormFields()}
 	 *
+	 * @codeCoverageIgnore
 	 * @param string $title Optional. Localized title of the generated instance
 	 * @return FormField
 	 */
@@ -326,6 +330,7 @@ abstract class DBField extends ViewableData {
 	 *
 	 * Used by {@link SearchContext}, {@link ModelAdmin}, {@link DataObject::scaffoldFormFields()}.
 	 *
+	 * @codeCoverageIgnore
 	 * @param string $title Optional. Localized title of the generated instance
 	 * @return FormField
 	 */
