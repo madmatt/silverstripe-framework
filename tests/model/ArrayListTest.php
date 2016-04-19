@@ -115,6 +115,9 @@ class ArrayListTest extends SapphireTest {
 		));
 	}
 
+	/**
+	 * @covers ArrayList::replace()
+	 */
 	public function testReplace() {
 		$list = new ArrayList(array(
 			array('Key' => 1),
@@ -131,6 +134,11 @@ class ArrayListTest extends SapphireTest {
 		$list->replace($two, array('Replaced' => 2));
 		$this->assertEquals(3, count($list));
 		$this->assertEquals(array('Replaced' => 2), $list[1]);
+
+		// Ensures an empty list doesn't insert or replace anything
+		$emptyList = new ArrayList();
+		$emptyList->replace($two, $two);
+		$this->assertEquals(0, $emptyList->count());
 	}
 
 	public function testMerge() {
@@ -225,6 +233,10 @@ class ArrayListTest extends SapphireTest {
 		), $map->toArray());
 	}
 
+	/**
+	 * @covers ArrayList::find()
+	 * @covers ArrayList::extractValue()
+	 */
 	public function testFind() {
 		$list = new ArrayList(array(
 			array('Name' => 'Steve'),
@@ -234,6 +246,10 @@ class ArrayListTest extends SapphireTest {
 		$this->assertEquals($list->find('Name', 'Bob'), (object) array(
 			'Name' => 'Bob'
 		));
+
+		// Ensures an empty list doesn't find anything
+		$emptyList = new ArrayList();
+		$this->assertSame(null, $emptyList->find('Name', 'Bob'));
 	}
 
 	public function testColumn() {
@@ -247,12 +263,66 @@ class ArrayListTest extends SapphireTest {
 		));
 	}
 
+	/**
+	 * @covers ArrayList::parseSortColumn()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Invalid sort() column
+	 */
+	public function testParseSortColumnWithInvalidColumn() {
+		$list = new ArrayList(array(array('Name' => 'Steve')));
+		$method = new ReflectionMethod('ArrayList', 'parseSortColumn');
+		$method->setAccessible(true);
+		$method->invokeArgs($list, array('Age = 40', 'ASC'));
+	}
+
+	/**
+	 * @covers ArrayList::parseSortColumn()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Invalid sort() direction
+	 */
+	public function testParseSortColumnWithInvalidDirection() {
+		$list = new ArrayList(array(array('Name' => 'Steve')));
+		$method = new ReflectionMethod('ArrayList', 'parseSortColumn');
+		$method->setAccessible(true);
+		$method->invokeArgs($list, array('Name', 'a to z'));
+	}
+
+	/**
+	 * @covers ArrayList::sort()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage This method takes zero, one or two arguments
+	 */
+	public function testSortThrowsExceptionForInvalidArgNumber() {
+		$list = new ArrayList();
+		$list->sort(1, 2, 3);
+	}
+
+	/**
+	 * @covers ArrayList::sort()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage Bad arguments passed to sort()
+	 */
+	public function testSortThrowsExceptionForInvalidArgs() {
+		$list = new ArrayList();
+		$list->sort(new stdClass);
+	}
+
+	/**
+	 * @covers ArrayList::sort()
+	 * @covers ArrayList::toArray()
+	 * @covers ArrayList::canSortBy()
+	 */
 	public function testSortSimpleDefaultIsSortedASC() {
 		$list = new ArrayList(array(
 			array('Name' => 'Steve'),
 			(object) array('Name' => 'Bob'),
 			array('Name' => 'John')
 		));
+
+		// Calling sort() with no args should return strictly the same object
+		$this->assertSame($list, $list->sort());
+
+		$this->assertSame(true, $list->canSortBy('Name'));
 
 		// Unquoted name
 		$list1 = $list->sort('Name');
@@ -569,6 +639,26 @@ class ArrayListTest extends SapphireTest {
 	}
 
 	/**
+	 * @covers ArrayList::filter()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage filter takes one array or two arguments
+	 */
+	public function testFilterThrowsExceptionForInvalidArgNumber() {
+		$list = new ArrayList();
+		$list->filter(1, 2, 3);
+	}
+
+	/**
+	 * @covers ArrayList::filter()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage filter takes one array or two arguments
+	 */
+	public function testFilterThrowsExceptionForInvalidArgs() {
+		$list = new ArrayList();
+		$list->filter(new stdClass);
+	}
+
+	/**
 	 * $list = $list->filterByCallback(function($item, $list) { return $item->Age == 21; })
 	 */
 	public function testFilterByCallback() {
@@ -592,6 +682,16 @@ class ArrayListTest extends SapphireTest {
 		$this->assertEquals(2, $list->count());
 		$this->assertEquals($expected, $list->toArray(), 'List should only contain Steve and Clair');
 		$this->assertTrue($list instanceof SS_Filterable, 'The List should be of type SS_Filterable');
+	}
+
+	/**
+	 * @covers ArrayList::filterByCallback()
+	 * @expectedException LogicException
+	 * @expectedExceptionMessage SS_Filterable::filterByCallback() passed callback must be callable, 'string' given
+	 */
+	public function testFilterByCallbackThrowsExceptionForInvalidArg() {
+		$list = new ArrayList();
+		$list->filterByCallback('invalid');
 	}
 
 	/**
@@ -796,13 +896,95 @@ class ArrayListTest extends SapphireTest {
 		$element = $list->byID(1);
 		$this->assertNull($element);
 	}
+
+	/**
+	 * @covers ArrayList::exclude()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage exclude() takes one array or two arguments
+	 */
+	public function testExcludeDoesntSupportMoreThan2Args() {
+		$list = new ArrayList();
+		$list->exclude(1, 2, 3);
+	}
+
+	/**
+	 * @covers ArrayList::exclude()
+	 * @expectedException InvalidArgumentException
+	 * @expectedExceptionMessage exclude() takes one array or two arguments
+	 */
+	public function testExcludeRequiresTwoArgs() {
+		$list = new ArrayList();
+		$list->exclude(1);
+	}
+
+	/**
+	 * @covers ArrayList::dataClass()
+	 */
+	public function testDataClass() {
+		$list = new ArrayList();
+		$this->assertSame(null, $list->dataClass());
+
+		$list->push($item = new ArrayListTest_Object(1, 2));
+		$this->assertSame('ArrayListTest_Object', $list->dataClass());
+
+		$list->remove($item);
+		$this->assertSame(null, $list->dataClass());
+	}
+
+	/**
+	 * @covers ArrayList::debug()
+	 * @covers ArrayList::toNestedArray()
+	 * @covers ArrayList::toMap()
+	 */
+	public function testDebug() {
+		$list = new ArrayList();
+		$this->assertSame('<h2>ArrayList</h2><ul></ul>', $list->debug());
+
+		$list->push(new ArrayListTest_Object(1, 2));
+		$this->assertSame(
+			"<h2>ArrayList</h2><ul><li style=\"list-style-type: disc; margin-left: 20px\"><ul>\n<li>First = 1</li>\n"
+				. "<li>Second = 2</li>\n</ul>\n</li></ul>",
+			$list->debug()
+		);
+	}
+
+	/**
+	 * @covers ArrayList::offsetGet()
+	 */
+	public function testOffsetGet() {
+		$list = new ArrayList();
+		$this->assertSame(null, $list->offsetGet(1));
+
+		$list->push($obj = new ArrayListTest_Object(1, 2));
+		$this->assertSame($obj, $list->offsetGet(0));
+	}
+
+	/**
+	 * @covers ArrayList::extractValue()
+	 */
+	public function testExtractValue() {
+		$list = new ArrayList(array(
+			$item = new ArrayListTest_ExtractValueObject(),
+			$item2 = array(
+				'Key' => 'Value'
+			)
+		));
+
+		$method = new ReflectionMethod('ArrayList', 'extractValue');
+		$method->setAccessible(true);
+
+		$this->assertSame('extracted value', $method->invokeArgs($list, array($item, 'Test')));
+		$this->assertSame('test key', $method->invokeArgs($list, array($item, 'TestKey')));
+
+		$this->assertSame('Value', $method->invokeArgs($list, array($item2, 'Key')));
+		$this->assertSame(null, $method->invokeArgs($list, array($item2, 'InvalidKey')));
+	}
 }
 
 /**
  * @ignore
  */
 class ArrayListTest_Object {
-
 	public $First;
 	public $Second;
 
@@ -814,5 +996,12 @@ class ArrayListTest_Object {
 	public function toMap() {
 		return array('First' => $this->First, 'Second' => $this->Second);
 	}
+}
 
+class ArrayListTest_ExtractValueObject extends Object {
+	public $TestKey = 'test key';
+
+	public function Test() {
+		return 'extracted value';
+	}
 }
