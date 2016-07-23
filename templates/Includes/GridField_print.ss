@@ -24,7 +24,7 @@
 		<p>
 			<%t GridField.PRINTEDAT 'Printed at' %> $Datetime.Time, $Datetime.Date
 			<br />
-			<%t GridField.PRINTEDBY 'Printed by' %> $Member.Name
+			<%t GridField.PRINTEDBY 'Printed by' %> $Member.Name.XML
 		</p>
 	</body>
 
