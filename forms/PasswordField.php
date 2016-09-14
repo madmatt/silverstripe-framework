@@ -49,6 +49,9 @@ class PasswordField extends TextField {
 			$attributes['autocomplete'] = 'off';
 		}
 
+		// Ensure we never return a 'value' for a password field, to avoid re-sending passwords back to a browser
+		$attributes['value'] = '';
+
 		return array_merge(
 			parent::getAttributes(),
 			$attributes
